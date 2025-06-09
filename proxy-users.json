@@ -1,0 +1,16 @@
+{
+  "users": {
+    "sene": {
+      "password": "senha123",
+      "enabled": true,
+      "maxConnections": 10,
+      "allowedIPs": [],
+      "description": "Usuário padrão"
+    }
+  },
+  "settings": {
+    "logLevel": "info",
+    "maxFailedAttempts": 5,
+    "blockDuration": 300000
+  }
+}
