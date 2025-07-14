@@ -69,6 +69,20 @@ class AdvancedHTTPProxy {
     }
   }
 
+  logTraffic(
+    userIdentifier,
+    clientIP,
+    uploadedBytes,
+    downloadedBytes,
+    protocol
+  ) {
+    const upKB = (uploadedBytes / 1024).toFixed(2);
+    const downKB = (downloadedBytes / 1024).toFixed(2);
+    console.log(
+      `📊 [${protocol}] ${userIdentifier}@${clientIP} trafegou ${upKB} KB ↑ / ${downKB} KB ↓`
+    );
+  }
+
   // Handle HTTP requests
   handleRequest(req, res) {
     const clientIP = req.socket.remoteAddress;
@@ -92,6 +106,8 @@ class AdvancedHTTPProxy {
 
     const userIdentifier = authResult.username; // This is the 'xxx' part
     this.updateUserStats(userIdentifier, "request");
+    const startRead = req.socket.bytesRead;
+    const startWritten = req.socket.bytesWritten;
     console.log(
       `➡️  ${userIdentifier}@${clientIP} -> ${req.method} ${req.url}`
     );
@@ -159,6 +175,12 @@ class AdvancedHTTPProxy {
     proxyReq.setTimeout(30000); // 30 seconds timeout
 
     req.pipe(proxyReq, { end: true });
+
+    res.on("finish", () => {
+      const uploaded = req.socket.bytesRead - startRead;
+      const downloaded = req.socket.bytesWritten - startWritten;
+      this.logTraffic(userIdentifier, clientIP, uploaded, downloaded, "HTTP");
+    });
   }
 
   // Handle HTTPS CONNECT requests
@@ -249,6 +271,18 @@ class AdvancedHTTPProxy {
     });
     serverSocket.on("end", () => {
       if (!clientSocket.destroyed) clientSocket.end();
+    });
+
+    clientSocket.on("close", () => {
+      const uploaded = clientSocket.bytesRead;
+      const downloaded = clientSocket.bytesWritten;
+      this.logTraffic(
+        userIdentifier,
+        clientIP,
+        uploaded,
+        downloaded,
+        "CONNECT"
+      );
     });
 
     clientSocket.on("timeout", () => {
