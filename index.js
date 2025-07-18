@@ -42,9 +42,9 @@ class SimpleHTTPProxy {
       1024 /
       1024
     ).toFixed(2);
-    console.log(
-      `📊 ${username}: ${upMB} MB ↑ / ${downMB} MB ↓ (Total: ${this.userTraffic[username].totalRequests} requests)`
-    );
+    // console.log(
+    //   `📊 ${username}: ${upMB} MB ↑ / ${downMB} MB ↓ (Total: ${this.userTraffic[username].totalRequests} requests)`
+    // );
   }
 
   // Verificar autenticação básica
