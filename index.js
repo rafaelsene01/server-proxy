@@ -143,6 +143,7 @@ class SimpleHTTPProxy {
   start() {
     this.server = http.createServer((req, res) => {
       this.handleRequest(req, res);
+      console.log(req, res);
     });
 
     this.server.on("connect", (req, clientSocket, head) => {
