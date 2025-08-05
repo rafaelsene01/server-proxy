@@ -31,18 +31,14 @@ class SimpleHTTPProxy {
     this.userTraffic.bytesDownloaded += downloaded;
     this.userTraffic.totalRequests++;
 
-    // Log do tráfego
-    const upMB = (this.userTraffic.bytesUploaded / 1024 / 1024).toFixed(2);
-    const downMB = (this.userTraffic.bytesDownloaded / 1024 / 1024).toFixed(2);
-    // console.log(
-    //   `📊 ${username}: ${upMB} MB ↑ / ${downMB} MB ↓ (Total: ${this.userTraffic.totalRequests} requests)`
-    // );
+    this.showAllStats();
   }
 
   // Lidar com requisições HTTP
   handleRequest(req, res) {
     this.initUserStats();
 
+    console.log(req);
     const targetUrl = url.parse(req.url);
     if (!targetUrl.hostname) {
       res.writeHead(400);
@@ -132,8 +128,16 @@ class SimpleHTTPProxy {
     serverSocket.on("end", cleanup);
   }
 
-  getAllStats() {
-    return this.userTraffic;
+  showAllStats() {
+    let stats = this.userTraffic;
+    if (stats) {
+      console.log("\n📈 Estatísticas dos usuários:");
+      const upMB = (stats.bytesUploaded / 1024 / 1024).toFixed(2);
+      const downMB = (stats.bytesDownloaded / 1024 / 1024).toFixed(2);
+      console.log(
+        `Uso geral: ${upMB} MB ↑ / ${downMB} MB ↓ (${stats.totalRequests} requests)`
+      );
+    }
   }
 
   start() {
@@ -176,30 +180,15 @@ proxy.start();
 
 // Exemplo de como acessar as estatísticas
 setInterval(() => {
-  const stats = proxy.getAllStats();
-  if (stats) {
-    console.log("\n📈 Estatísticas dos usuários:");
-    const upMB = (stats.bytesUploaded / 1024 / 1024).toFixed(2);
-    const downMB = (stats.bytesDownloaded / 1024 / 1024).toFixed(2);
-    console.log(
-      `Uso geral: ${upMB} MB ↑ / ${downMB} MB ↓ (${stats.totalRequests} requests)`
-    );
-  }
-}, 60000); // Mostra estatísticas a cada minuto
+  proxy.showAllStats();
+}, 5000); // Mostra estatísticas a cada minuto
 
 // Shutdown graceful
 process.on("SIGINT", () => {
   console.log("\nParando proxy...");
   // Mostrar estatísticas finais
-  const stats = proxy.getAllStats();
-  if (stats) {
-    console.log("\n📈 Estatísticas dos usuários:");
-    const upMB = (stats.bytesUploaded / 1024 / 1024).toFixed(2);
-    const downMB = (stats.bytesDownloaded / 1024 / 1024).toFixed(2);
-    console.log(
-      `Uso geral: ${upMB} MB ↑ / ${downMB} MB ↓ (${stats.totalRequests} requests)`
-    );
-  }
+  proxy.getAllStats();
+
   proxy.stop(() => {
     process.exit(0);
   });
